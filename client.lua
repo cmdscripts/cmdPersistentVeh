@@ -203,18 +203,28 @@ RegisterNetEvent('pv:applyExtra', function(netId, extra)
 end)
 
 local function ensureNetId(veh)
+  if veh == 0 or not DoesEntityExist(veh) then return 0 end
+
   local netId = VehToNet(veh)
   if netId ~= 0 then return netId end
 
-  NetworkRegisterEntityAsNetworked(veh)
-
   local tries = 0
   ::continue::
+
+  if not DoesEntityExist(veh) then return 0 end
+
+  if not NetworkHasControlOfEntity(veh) then
+    NetworkRequestControlOfEntity(veh)
+  end
+
+  NetworkRegisterEntityAsNetworked(veh)
+
   netId = VehToNet(veh)
   if netId ~= 0 then return netId end
+
   tries += 1
-  if tries >= 25 then return 0 end
-  Wait(0)
+  if tries >= 50 then return 0 end
+  Wait(25)
   goto continue
 end
 
